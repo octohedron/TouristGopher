@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -18,10 +20,11 @@ type User struct {
 }
 
 type Review struct {
-	Level     int       `json:"level"`
-	Text      string    `json:"text"`
-	UserName  string    `json:"name"`
-	Timestamp time.Time `json:"timestamp,omitempty"`
+	Rating            string `json:"Rating"`
+	Sources           int    `json:"Sources"`
+	Number_of_Ratings int    `json:"Number_of_Ratings"`
+	Location          string `json:"Location"`
+	Name              string `json:"Name"`
 }
 
 type DBReview struct {
@@ -66,8 +69,22 @@ func index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// cookie, err := r.Cookie(COOKIE_NAME)
+	conn := POOL.Get()
+	defer conn.Close()
+	places_json, err := redis.Strings(conn.Do("LRANGE", "places", 0, -1))
+	if err != nil {
+		log.Println(err)
+	}
+	var places []Review
+	for _, place := range places_json {
+		p := Review{}
+		json.Unmarshal([]byte(place), &p)
+		places = append(places, p)
+	}
 	template.Must(template.New("index.html").ParseFiles(
-		PROJ_ROOT+"/index.html")).Execute(w, r)
+		PROJ_ROOT+"/index.html")).Execute(w, struct {
+		Places []Review
+	}{places})
 }
 
 /**
@@ -97,10 +114,44 @@ func saveReview(rev *DBReview) {
 	}
 }
 
+func getHomeData() {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET",
+		"http://touristfriend.club/api/2000/48.857031,2.341719/hotels", nil)
+	if err != nil {
+		log.Println(err)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	var places []Review
+	json.Unmarshal(body, &places)
+	conn := POOL.Get()
+	defer conn.Close()
+	for _, place := range places {
+		json, err := json.Marshal(place)
+		_, err = conn.Do("RPUSH", "places", json)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 func main() {
 	ReviewChannel = make(chan DBReview, 256)
 	// a goroutine for saving reviews
 	go saveReviews(&ReviewChannel)
+	// get home data and store it in memory
+	go getHomeData()
 	//for keeping track of users in memory
 	users = make(map[string]User)
 	r := mux.NewRouter()
