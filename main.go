@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
+	"strconv"
 	"time"
 )
 
@@ -26,7 +28,7 @@ type Review struct {
 	Location          string `json:"Location"`
 	Name              string `json:"Name"`
 }
-
+type Reviews []Review
 type DBReview struct {
 	Location string
 	Json     []byte
@@ -71,16 +73,17 @@ func index(w http.ResponseWriter, r *http.Request) {
 	// cookie, err := r.Cookie(COOKIE_NAME)
 	conn := POOL.Get()
 	defer conn.Close()
-	places_json, err := redis.Strings(conn.Do("LRANGE", "places", 0, -1))
+	places_json, err := redis.Strings(conn.Do("SMEMBERS", "places"))
 	if err != nil {
 		log.Println(err)
 	}
-	var places []Review
+	places := Reviews{}
 	for _, place := range places_json {
 		p := Review{}
 		json.Unmarshal([]byte(place), &p)
 		places = append(places, p)
 	}
+	sort.Sort(places)
 	template.Must(template.New("index.html").ParseFiles(
 		PROJ_ROOT+"/index.html")).Execute(w, struct {
 		Places []Review
@@ -108,7 +111,7 @@ func saveReview(rev *DBReview) {
 		log.Println(err)
 	}
 	defer conn.Close()
-	_, err = conn.Do("RPUSH", rev.Location, rev.Json)
+	_, err = conn.Do("SADD", "places", rev.Json)
 	if err != nil {
 		log.Println(err)
 	}
@@ -136,7 +139,7 @@ func getHomeData() {
 	defer conn.Close()
 	for _, place := range places {
 		json, err := json.Marshal(place)
-		_, err = conn.Do("RPUSH", "places", json)
+		_, err = conn.Do("SADD", "places", json)
 		if err != nil {
 			log.Println(err)
 		}
@@ -172,4 +175,24 @@ func main() {
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
+}
+
+func (slice Reviews) Len() int {
+	return len(slice)
+}
+
+func (slice Reviews) Less(i, j int) bool {
+	a, err := strconv.ParseFloat(slice[i].Rating, 32)
+	if err != nil {
+		log.Println(err)
+	}
+	b, err := strconv.ParseFloat(slice[j].Rating, 32)
+	if err != nil {
+		log.Println(err)
+	}
+	return a > b
+}
+
+func (slice Reviews) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
 }
