@@ -1,112 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-		<meta charset="utf-8">
-		<title>TouristGopher</title>
-		<meta name="generator" content="Bootply" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<!--[if lt IE 9]>
-			<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
-		<![endif]-->
-		<link href="css/styles.css" rel="stylesheet">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>TouristGopher</title>
+    <meta name="generator" content="Bootply" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="https://bootswatch.com/cosmo/bootstrap.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="57x57" href="/images/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/images/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/images/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/images/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/images/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/images/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/images/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/images/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/images/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+    <link rel="manifest" href="/images/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <!--[if lt IE 9]>
+      <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-    <style type="text/css">
-       .animated {
-            -webkit-transition: height 0.2s;
-            -moz-transition: height 0.2s;
-            transition: height 0.2s;
-        }
-        .stars
-        {
-            margin: 20px 0;
-            font-size: 24px;
-            color: #d17581;
-        }
-    </style>
-	</head>
-	<body>
-<!-- begin template -->
-<div class="navbar navbar-custom navbar-fixed-top">
- <div class="navbar-header"><a class="navbar-brand" href="#">Brand</a>
-      <a class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-    </div>
-    <div class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-        <li class="active"><a href="#">Home</a></li>
-        <li><a href="#">Link</a></li>
-        <li><a href="#">Link</a></li>
-        <li>&nbsp;</li>
-      </ul>
-      <form class="navbar-form">
-        <div class="form-group" style="display:inline;">
-          <div class="input-group">
-            <div class="input-group-btn">
-              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-chevron-down"></span></button>
-              <ul class="dropdown-menu">
-                <li><a href="#">Category 1</a></li>
-                <li><a href="#">Category 2</a></li>
-                <li><a href="#">Category 3</a></li>
-                <li><a href="#">Category 4</a></li>
-                <li><a href="#">Category 5</a></li> 
-              </ul>
-            </div>
-            <input type="text" class="form-control" placeholder="What are searching for?">
-            <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span> </span>
-          </div>
-        </div>
-      </form>
-    </div>
-</div>
+  </head>
+  <body>
+<!-- nav -->
 
-<div id="map-canvas"></div>
+<nav class="navbar navbar-fixed-top navbar-inverse">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+    <a class="navbar-brand" href="#">
+      <img style="height: 26px; width:26px;" src="/images/gopher.png">
+    </a>
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">TouristGopher</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Home <span class="sr-only">(current)</span></a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Categories <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Restaurants</a></li>
+            <li><a href="#">Bars</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Nightlife</a></li>
+          </ul>
+        </li>
+      </ul>
+      <form class="navbar-form navbar-left">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Montmartre, Lyon...">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Contact <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Email</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="https://twitter.com/gustav__rod">Twitter</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+
+
+<!-- end nav -->
 <div class="container-fluid" id="main">
   <div class="row">
-  	<div class="col-xs-8" id="left">
+    <div class="col-md-8 col-xs-12" id="left">
     
       <h2>TouristGopher</h2>
-      
+      <p>Search results for <em> Montmartre </em></p>
       <!-- item list -->
       <!-- item -->
       {{range $i, $a := .Places }}
-      <div class="panel panel-default">
-        <div class="panel-heading"><a href="">{{ .Name }}</a></div>
-        <div class="panel-body">
-          <span style="font-size:15px; font-weight: bolder;">Rating: </span></em><span style="color: green; font-size:20px;"><em>{{ .Rating }}</em></span>
-          <p style="float:right;"><span style="font-size:20px;">Number of ratings: <span style="color:red; font-weight: bolder">{{ .Number_of_Ratings }}</span></span></p>
-          <hr/>
-        <div class="well well-sm">
-          <div class="text-right">
-            <a class="btn btn-success btn-green" href="#reviews-anchor" id="open-review-box">Leave a Review</a>
-          </div>
-
-          <div class="row" id="post-review-box" style="display:none;">
-            <div class="col-md-12">
-              <form accept-charset="UTF-8" action="" method="post">
-                <input id="ratings-hidden" name="rating" type="hidden">
-                <textarea class="form-control animated" cols="50" id="new-review" name="comment" placeholder="Enter your review here..." rows="5"></textarea>
-
-                <div class="text-right">
-                  <div class="stars starrr" data-rating="0"></div>
-                  <a class="btn btn-danger btn-sm" href="#" id="close-review-box" style="display:none; margin-right: 10px;">
-                    <span class="glyphicon glyphicon-remove"></span>Cancel</a>
-                  <button class="btn btn-success btn-lg" type="submit">Save</button>
-                </div>
-              </form>
-            </div>
+      <div class="col-md-6 col-xs-12">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <span style="font-weight: bolder;color: green; font-size:20px;"><em>{{ .Rating }}</em></span> 
+            <a href="">{{ .Name }}</a>
+            <span style="font-size:20px;float:right;"><span style="color:red; font-weight: bolder">{{ .Number_of_Ratings }}</span> Ratings</span>
           </div>
         </div>
-        </div>
-      
       </div>
       {{ end }}
       <!-- End item -->
-      
       <p>
       <a href="http://github.com/octohedron/touristgopher">Source Code</a>
       </p>
@@ -114,13 +114,18 @@
       <hr> 
         
       <p>
-      <a href="http://bootply.com" target="_ext" class="center-block btn btn-primary">More Bootstrap Snippets on Bootply</a>
+      <a href="#" target="_ext" class="center-block btn btn-primary">Load more results</a>
       </p>
         
       <hr>      
 
     </div>
-    <div class="col-xs-4"><!--map-canvas will be postioned here--></div>
+    <div class="col-md-4 col-xs-12">
+      <div class="iframe-container">
+        <div id="map_container"></div>
+        <div id="map"></div>
+      </div>
+</div>
     
   </div>
 </div>
@@ -140,12 +145,11 @@ function initialize() {
 
   var mapOptions = {
     center: latlng,
-    scrollWheel: false,
     zoom: 15
   };
   
   // Initialize map
-  map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+  map = new google.maps.Map(document.getElementById("map"), mapOptions);
 
   // Print places
   {{range $i, $a := .Places}}
@@ -158,15 +162,23 @@ function initialize() {
     });
     {{ toJS .MarkerVar -}}.setMap(map);
   {{end}}
-};
+
+  }; // end initialize
+  
+  google.maps.event.addDomListener(window, "resize", function() {
+    var center = map.getCenter();
+    google.maps.event.trigger(map, "resize");
+    map.setCenter(center);
+  });
+  
 /* end google maps -----------------------------------------------------*/
 });
 
 </script>
-	<!-- script references -->
-		
+  <!-- script references -->
+    
     <script src="js/bootstrap.min.js"></script>
-		<script src="js/scripts.js"></script>
-		<script src="http://maps.googleapis.com/maps/api/js?key={{- toJS .GMAPS_KEY -}}&extension=.js&output=embed"></script>
-	</body>
+    <script src="js/scripts.js"></script>
+    <script src="http://maps.googleapis.com/maps/api/js?key={{- toJS .GMAPS_KEY -}}&extension=.js&output=embed"></script>
+  </body>
 </html>

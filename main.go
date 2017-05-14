@@ -167,7 +167,18 @@ func getHomeData() {
 		log.Println(err)
 	}
 }
-
+func css(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", 405)
+		return
+	}
+	w.Header().Set("Content-Type", "text/css")
+	t, err := template.New("styles.css").ParseFiles(PROJ_ROOT + "/styles.css")
+	if err != nil {
+		log.Println(err)
+	}
+	t.Execute(w, r)
+}
 func main() {
 	ReviewChannel = make(chan DBReview, 256)
 	// a goroutine for saving reviews
@@ -178,12 +189,15 @@ func main() {
 	users = make(map[string]User)
 	r := mux.NewRouter()
 	r.HandleFunc("/", index)
+	r.HandleFunc("/styles.css", css)
 	r.PathPrefix("/js/").Handler(http.StripPrefix("/js/",
 		http.FileServer(http.Dir(PROJ_ROOT+"/js/"))))
 	r.PathPrefix("/fonts/").Handler(http.StripPrefix("/fonts/",
 		http.FileServer(http.Dir(PROJ_ROOT+"/fonts/"))))
 	r.PathPrefix("/css/").Handler(http.StripPrefix("/css/",
 		http.FileServer(http.Dir(PROJ_ROOT+"/css/"))))
+	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/",
+		http.FileServer(http.Dir(PROJ_ROOT+"/images/"))))
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         ":" + GPORT,

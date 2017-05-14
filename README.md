@@ -18,4 +18,6 @@ $ export GMAPS_KEY=YOUR_GMAPS_KEY
 $ go build && nohup ./TouristGopher & 
 ```
 
+Check the other repo, [TouristFriend](http://github.com/octohedron/TouristFriend) that gets the list of results from Google, Yelp and Foursquare, with Bayesian rankings
+
 LICENSE: MIT
