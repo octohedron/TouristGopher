@@ -56,6 +56,7 @@
         <li class="active"><a href="#">Home <span class="sr-only">(current)</span></a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Categories <span class="caret"></span></a>
+
           <ul class="dropdown-menu">
             <li><a href="#">Restaurants</a></li>
             <li><a href="#">Bars</a></li>
@@ -102,28 +103,26 @@
       <div class="col-md-6 col-xs-12">
         <div class="panel panel-default">
           <div class="panel-body">
-            <span style="font-weight: bolder;color: green; font-size:20px;"><em>{{ .Rating }}</em></span> 
+            <span class="ratingScore"><em>{{ .Rating }}</em></span>
+            <span class="ratingsSpan"><span class="numRatings">{{ .Number_of_Ratings }}</span> Ratings</span>
             <a class="loclink" href="#" dataloc="{{- .Location -}}">{{ .Name }}</a>
-            <span style="font-size:20px;float:right;"><span style="color:red; font-weight: bolder">{{ .Number_of_Ratings }}</span> Ratings</span>
           </div>
         </div>
       </div>
       {{ end }}
       </div>
       <!-- End item -->
-      <p>
-        <a href="http://github.com/octohedron/touristgopher">Source Code</a>
-      </p>
-      <hr>      
     </div>
     <div class="col-md-4 col-xs-12">
       <div class="iframe-container">
         <div id="map_container"></div>
         <div id="map"></div>
       </div>
-</div>
-    
+    </div>
   </div>
+  <p>
+      <a href="http://github.com/octohedron/touristgopher">Source Code</a>
+    </p>
 </div>
 <!-- end template -->
 <script type="text/javascript">
@@ -195,9 +194,9 @@ const Item = ({
   <div class="col-md-6 col-xs-12">
     <div class="panel panel-default">
       <div class="panel-body">
-        <span style="font-weight: bolder;color: green; font-size:20px;"><em>${Rating}</em></span> 
+        <span class="ratingScore"><em>${Rating}</em></span> 
+        <span class="ratingsSpan"><span class="numRatings">${Number_of_Ratings}</span> Ratings</span>
         <a class="loclink" href="#" dataloc="${Location}">${Name}</a>
-        <span style="font-size:20px;float:right;"><span style="color:red; font-weight: bolder">${Number_of_Ratings}</span> Ratings</span>
       </div>
     </div>
   </div> `;
@@ -206,7 +205,7 @@ var revs = document.getElementById("revs-container");
 // search
 $('#searchform').submit((e) => {
     e.preventDefault();
-    let needle = $('#searchInput').val();
+    let needle = encodeURIComponent($('#searchInput').val().trim()).replace(/%20/g,'+');
     if (needle.length < 3) {
       alert("Please enter at least 3 characters")
     } else if (needle.length > 50) {
@@ -223,37 +222,42 @@ $('#searchform').submit((e) => {
           method: 'get'
         }).then(function(response) {
           response.json().then(function(json) {
-            var lat = json["results"][0]["geometry"]["location"]["lat"];
-            var long = json["results"][0]["geometry"]["location"]["lng"];
-            let apiURL = 'http://touristfriend.club/api/4000/' + lat + ',' + long + '/restaurants';
-            fetch(apiURL, {
-              method: 'get'
-            }).then(function(response) {
-              response.json().then(function(json) {
-                // hide loading indicator
-                $('#loading-indicator').hide();
-                moveToLocation(lat, long);
-                // append new items
-                json.forEach((i) => {
-                  var item = document.createElement("div");
-                  $(item).html([i].map(Item).join(''));
-                  revs.appendChild(item);
-                  $('#pqueryContainer').show();
-                  $("#resultQueryNotifier").html(needle);
-                  // set new markers
-                  let coords = {lat: parseFloat(i["Location"].split(",")[0]), lng: parseFloat(i["Location"].split(",")[1])};
-                  var marker = new google.maps.Marker({
-                    position: coords,
-                    map: map,
-                    label: i["Name"],
-                    animation: google.maps.Animation.DROP
-                  });
-                 marker.setMap(map);
-                })
+            if (json["results"] && json["results"].length > 0) {
+              var lat = json["results"][0]["geometry"]["location"]["lat"];
+              var long = json["results"][0]["geometry"]["location"]["lng"];
+              let apiURL = 'http://touristfriend.club/api/4000/' + lat + ',' + long + '/restaurants';
+              fetch(apiURL, {
+                method: 'get'
+              }).then(function(response) {
+                response.json().then(function(json) {
+                  // hide loading indicator
+                  $('#loading-indicator').hide();
+                  moveToLocation(lat, long);
+                  // append new items
+                  json.forEach((i) => {
+                    var item = document.createElement("div");
+                    $(item).html([i].map(Item).join(''));
+                    revs.appendChild(item);
+                    $('#pqueryContainer').show();
+                    $("#resultQueryNotifier").html(" " + needle.replace('+',' '));
+                    // set new markers
+                    let coords = {lat: parseFloat(i["Location"].split(",")[0]), lng: parseFloat(i["Location"].split(",")[1])};
+                    var marker = new google.maps.Marker({
+                      position: coords,
+                      map: map,
+                      label: i["Name"],
+                      animation: google.maps.Animation.DROP
+                    });
+                   marker.setMap(map);
+                  })
+                }).catch((e) => console.log(e));
               })
-            })
+            } else {
+              $('#loading-indicator').hide();
+              $("#resultQueryNotifier").html(needle + " are none");
+            }
         });
-      });
+      }).catch((e) => console.log(e));
     }
   });
 });
