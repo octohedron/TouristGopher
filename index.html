@@ -205,7 +205,7 @@ var revs = document.getElementById("revs-container");
 // search
 $('#searchform').submit((e) => {
     e.preventDefault();
-    let needle = encodeURIComponent($('#searchInput').val().trim()).replace(/%20/g,'+');
+    let needle = encodeURIComponent($('#searchInput').val().trim()).split('%20').join('+');
     if (needle.length < 3) {
       alert("Please enter at least 3 characters")
     } else if (needle.length > 50) {
@@ -239,7 +239,7 @@ $('#searchform').submit((e) => {
                     $(item).html([i].map(Item).join(''));
                     revs.appendChild(item);
                     $('#pqueryContainer').show();
-                    $("#resultQueryNotifier").html(" " + needle.replace('+',' '));
+                    $("#resultQueryNotifier").html(" " + needle.split('+').join(' '));
                     // set new markers
                     let coords = {lat: parseFloat(i["Location"].split(",")[0]), lng: parseFloat(i["Location"].split(",")[1])};
                     var marker = new google.maps.Marker({
