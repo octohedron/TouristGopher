@@ -46,13 +46,10 @@ type DBReview struct {
 }
 
 var PROJ_ROOT = ""
-
-// mem
 var users map[string]User
 var AuthorizedIps []string
 var ReviewChannel chan DBReview
-var COOKIE_NAME = "goddit"
-var GPORT = "9000"
+var GPORT = "8000"
 var GMAPS_KEY = ""
 
 // Declare a global variable to store the Redis connection pool.
@@ -109,33 +106,6 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}{places, GMAPS_KEY})
 }
 
-/**
- * Channel to save reviews to the database
- */
-func saveReviews(r *chan DBReview) {
-	for {
-		review, ok := <-*r
-		if !ok {
-			log.Println("Error when trying to save")
-			return
-		}
-		saveReview(&review)
-	}
-}
-
-func saveReview(rev *DBReview) {
-	var err error
-	conn := POOL.Get()
-	if err != nil {
-		log.Println(err)
-	}
-	defer conn.Close()
-	_, err = conn.Do("SADD", "places", rev.Json)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
 func getHomeData() {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET",
@@ -180,10 +150,7 @@ func css(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, r)
 }
 func main() {
-	ReviewChannel = make(chan DBReview, 256)
-	// a goroutine for saving reviews
-	go saveReviews(&ReviewChannel)
-	// get home data and store it in memory
+	// get home data and store it in redis
 	go getHomeData()
 	//for keeping track of users in memory
 	users = make(map[string]User)
