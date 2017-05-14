@@ -3,7 +3,7 @@
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 		<meta charset="utf-8">
-		<title>TouristFriend</title>
+		<title>TouristGopher</title>
 		<meta name="generator" content="Bootply" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 		<link href="css/bootstrap.min.css" rel="stylesheet">
@@ -11,6 +11,20 @@
 			<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
 		<link href="css/styles.css" rel="stylesheet">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+    <style type="text/css">
+       .animated {
+            -webkit-transition: height 0.2s;
+            -moz-transition: height 0.2s;
+            transition: height 0.2s;
+        }
+        .stars
+        {
+            margin: 20px 0;
+            font-size: 24px;
+            color: #d17581;
+        }
+    </style>
 	</head>
 	<body>
 <!-- begin template -->
@@ -55,22 +69,46 @@
   <div class="row">
   	<div class="col-xs-8" id="left">
     
-      <h2>TouristFriend</h2>
+      <h2>TouristGopher</h2>
       
       <!-- item list -->
       <!-- item -->
       {{range $i, $a := .Places }}
       <div class="panel panel-default">
         <div class="panel-heading"><a href="">{{ .Name }}</a></div>
+        <div class="panel-body">
+          <span style="font-size:15px; font-weight: bolder;">Rating: </span></em><span style="color: green; font-size:20px;"><em>{{ .Rating }}</em></span>
+          <p style="float:right;"><span style="font-size:20px;">Number of ratings: <span style="color:red; font-weight: bolder">{{ .Number_of_Ratings }}</span></span></p>
+          <hr/>
+        <div class="well well-sm">
+          <div class="text-right">
+            <a class="btn btn-success btn-green" href="#reviews-anchor" id="open-review-box">Leave a Review</a>
+          </div>
+
+          <div class="row" id="post-review-box" style="display:none;">
+            <div class="col-md-12">
+              <form accept-charset="UTF-8" action="" method="post">
+                <input id="ratings-hidden" name="rating" type="hidden">
+                <textarea class="form-control animated" cols="50" id="new-review" name="comment" placeholder="Enter your review here..." rows="5"></textarea>
+
+                <div class="text-right">
+                  <div class="stars starrr" data-rating="0"></div>
+                  <a class="btn btn-danger btn-sm" href="#" id="close-review-box" style="display:none; margin-right: 10px;">
+                    <span class="glyphicon glyphicon-remove"></span>Cancel</a>
+                  <button class="btn btn-success btn-lg" type="submit">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        </div>
+      
       </div>
-      <p>Number of ratings: {{ .Number_of_Ratings }}</p>
-      <p>Rating: {{ .Rating }}</p>
-      <hr>
       {{ end }}
       <!-- End item -->
       
       <p>
-      <a href="http://www.bootply.com/render/129229">Demo</a> | <a href="http://bootply.com/129229">Source Code</a>
+      <a href="http://github.com/octohedron/touristgopher">Source Code</a>
       </p>
       
       <hr> 
@@ -87,11 +125,48 @@
   </div>
 </div>
 <!-- end template -->
+<script type="text/javascript">
 
+
+$(document).ready(function() {
+var map, infoWindow;
+/* google maps -----------------------------------------------------*/
+google.maps.event.addDomListener(window, 'load', initialize);
+
+function initialize() {
+
+  /* position Amsterdam */
+  var latlng = new google.maps.LatLng(48.857031, 2.341719);
+
+  var mapOptions = {
+    center: latlng,
+    scrollWheel: false,
+    zoom: 15
+  };
+  
+  // Initialize map
+  map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+
+  // Print places
+  {{range $i, $a := .Places}}
+    let {{ toJS .Identifier }} = {lat: parseFloat('{{ .Location }}'.split(",")[0]), lng: parseFloat('{{ .Location }}'.split(",")[1])};
+    var {{toJS  .MarkerVar -}} = new google.maps.Marker({
+      position: {{ toJS  .Identifier }},
+      map: map,
+      label: '{{ .Name }}',
+      animation: google.maps.Animation.DROP
+    });
+    {{ toJS .MarkerVar -}}.setMap(map);
+  {{end}}
+};
+/* end google maps -----------------------------------------------------*/
+});
+
+</script>
 	<!-- script references -->
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-		<script src="js/bootstrap.min.js"></script>
-		<script src="http://maps.googleapis.com/maps/api/js?sensor=false&extension=.js&output=embed"></script>
+		
+    <script src="js/bootstrap.min.js"></script>
 		<script src="js/scripts.js"></script>
+		<script src="http://maps.googleapis.com/maps/api/js?key={{- toJS .GMAPS_KEY -}}&extension=.js&output=embed"></script>
 	</body>
 </html>

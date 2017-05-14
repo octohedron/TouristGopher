@@ -7,11 +7,20 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"sort"
 	"strconv"
 	"time"
+)
+
+// generate random ids
+const (
+	letterBytes   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	letterIdxBits = 6                    // 6 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
 type User struct {
@@ -27,6 +36,8 @@ type Review struct {
 	Number_of_Ratings int    `json:"Number_of_Ratings"`
 	Location          string `json:"Location"`
 	Name              string `json:"Name"`
+	Identifier        string
+	MarkerVar         string
 }
 type Reviews []Review
 type DBReview struct {
@@ -42,6 +53,7 @@ var AuthorizedIps []string
 var ReviewChannel chan DBReview
 var COOKIE_NAME = "goddit"
 var GPORT = "9000"
+var GMAPS_KEY = ""
 
 // Declare a global variable to store the Redis connection pool.
 var POOL *redis.Pool
@@ -52,6 +64,7 @@ func init() {
 	if err != nil {
 		log.Println(err)
 	}
+	GMAPS_KEY = os.Getenv("GMAPS_KEY")
 	PROJ_ROOT = ROOT
 	// Establish a pool of 5 Redis connections to the Redis server
 	POOL = newPool("localhost:6379")
@@ -70,7 +83,6 @@ func index(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", 405)
 		return
 	}
-	// cookie, err := r.Cookie(COOKIE_NAME)
 	conn := POOL.Get()
 	defer conn.Close()
 	places_json, err := redis.Strings(conn.Do("SMEMBERS", "places"))
@@ -81,13 +93,20 @@ func index(w http.ResponseWriter, r *http.Request) {
 	for _, place := range places_json {
 		p := Review{}
 		json.Unmarshal([]byte(place), &p)
+		p.Identifier = getRandomString(8)
+		p.MarkerVar = getRandomString(8)
 		places = append(places, p)
 	}
 	sort.Sort(places)
-	template.Must(template.New("index.html").ParseFiles(
+	template.Must(template.New("index.html").Funcs(template.FuncMap{
+		"toJS": func(v string) template.JS {
+			return template.JS(v)
+		},
+	}).ParseFiles(
 		PROJ_ROOT+"/index.html")).Execute(w, struct {
-		Places []Review
-	}{places})
+		Places    []Review
+		GMAPS_KEY string
+	}{places, GMAPS_KEY})
 }
 
 /**
@@ -195,4 +214,22 @@ func (slice Reviews) Less(i, j int) bool {
 
 func (slice Reviews) Swap(i, j int) {
 	slice[i], slice[j] = slice[j], slice[i]
+}
+func getRandomString(n int) string {
+	b := make([]byte, n)
+	src := rand.NewSource(time.Now().UnixNano())
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = src.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return string(b)
 }
