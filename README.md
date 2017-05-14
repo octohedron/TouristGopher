@@ -1,6 +1,8 @@
 # TouristGopher
 
-### This gopher knows
+> This gopher knows
+
+See it in action at [touristgopher.com](http://touristgopher.com)
 
 ## Try it out
 + Install redis
