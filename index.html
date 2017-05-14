@@ -64,9 +64,9 @@
           </ul>
         </li>
       </ul>
-      <form class="navbar-form navbar-left">
+      <form class="navbar-form navbar-left" id="searchform">
         <div class="form-group">
-          <input type="text" class="form-control" placeholder="Montmartre, Lyon...">
+          <input type="text" class="form-control" placeholder="Montmartre, Lyon..." id="searchInput">
         </div>
         <button type="submit" class="btn btn-default">Submit</button>
       </form>
@@ -92,33 +92,33 @@
     <div class="col-md-8 col-xs-12" id="left">
     
       <h2>TouristGopher</h2>
-      <p>Search results for <em> Montmartre </em></p>
+      <p id="pqueryContainer">Search results for <em>restaurants</em> in<em id="resultQueryNotifier"> Paris </em></p>
+      <img src="/images/loading.gif" id="loading-indicator" style="display:none" />
       <!-- item list -->
+      <div id="revs-container">
+
       <!-- item -->
       {{range $i, $a := .Places }}
       <div class="col-md-6 col-xs-12">
         <div class="panel panel-default">
           <div class="panel-body">
             <span style="font-weight: bolder;color: green; font-size:20px;"><em>{{ .Rating }}</em></span> 
-            <a href="">{{ .Name }}</a>
+            <a href="#">{{ .Name }}</a>
             <span style="font-size:20px;float:right;"><span style="color:red; font-weight: bolder">{{ .Number_of_Ratings }}</span> Ratings</span>
           </div>
         </div>
       </div>
       {{ end }}
+      </div>
       <!-- End item -->
       <p>
-      <a href="http://github.com/octohedron/touristgopher">Source Code</a>
+        <a href="http://github.com/octohedron/touristgopher">Source Code</a>
       </p>
-      
       <hr> 
-        
       <p>
-      <a href="#" target="_ext" class="center-block btn btn-primary">Load more results</a>
+        <a href="#" target="_ext" class="center-block btn btn-primary">Load more results</a>
       </p>
-        
       <hr>      
-
     </div>
     <div class="col-md-4 col-xs-12">
       <div class="iframe-container">
@@ -164,14 +164,91 @@ function initialize() {
   {{end}}
 
   }; // end initialize
-  
+
   google.maps.event.addDomListener(window, "resize", function() {
     var center = map.getCenter();
     google.maps.event.trigger(map, "resize");
     map.setCenter(center);
   });
-  
+  /**
+   * For panning the map
+   * @param  {float} lat The latitude to pan to
+   * @param  {float} lng the longitude to pan to
+   */
+  function moveToLocation(lat, lng){
+    var center = new google.maps.LatLng(lat, lng);
+    // using global variable:
+    map.panTo(center);
+  }
 /* end google maps -----------------------------------------------------*/
+// Review template
+const Item = ({
+  Rating, Name, Number_of_Ratings
+}) => `
+  <div class="col-md-6 col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <span style="font-weight: bolder;color: green; font-size:20px;"><em>${Rating}</em></span> 
+        <a href="#">${Name}</a>
+        <span style="font-size:20px;float:right;"><span style="color:red; font-weight: bolder">${Number_of_Ratings}</span> Ratings</span>
+      </div>
+    </div>
+  </div> `;
+// reference to the reviews log
+var revs = document.getElementById("revs-container");
+// search
+$('#searchform').submit((e) => {
+    let needle = $('#searchInput').val();
+    if (needle.length < 3) {
+      alert("Please enter at least 3 characters")
+    } else if (needle.length > 50) {
+      alert("Search query too long")
+    } else {
+      let geoURL = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + needle + "&key={{- toJS .GMAPS_KEY -}}";
+      // clear items first
+      while (revs.hasChildNodes()) {
+        revs.removeChild(revs.lastChild);
+      }
+      $('#loading-indicator').show();
+      $('#pqueryContainer').hide();
+      fetch(geoURL, {
+          method: 'get'
+        }).then(function(response) {
+          response.json().then(function(json) {
+            var lat = json["results"][0]["geometry"]["location"]["lat"];
+            var long = json["results"][0]["geometry"]["location"]["lng"];
+            let apiURL = 'http://touristfriend.club/api/4000/' + lat + ',' + long + '/restaurants';
+            fetch(apiURL, {
+              method: 'get'
+            }).then(function(response) {
+              response.json().then(function(json) {
+                // hide loading indicator
+                $('#loading-indicator').hide();
+                moveToLocation(lat, long);
+                // append new items
+                json.forEach((i) => {
+                  var item = document.createElement("div");
+                  $(item).html([i].map(Item).join(''));
+                  revs.appendChild(item);
+                  $('#pqueryContainer').show();
+                  $("#resultQueryNotifier").html(needle);
+                  // set new markers
+                  let coords = {lat: parseFloat(i["Location"].split(",")[0]), lng: parseFloat(i["Location"].split(",")[1])};
+                  var marker = new google.maps.Marker({
+                    position: coords,
+                    map: map,
+                    label: i["Name"],
+                    animation: google.maps.Animation.DROP
+                  });
+                 marker.setMap(map);
+                })
+              })
+            })
+        });
+      });
+    }
+    console.log('a');
+  });
 });
 
 </script>

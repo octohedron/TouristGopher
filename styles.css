@@ -68,6 +68,12 @@ body {
     padding-top: 30px;
     position: relative;
 }
+#loading-indicator {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    display: block;
+}
 @media (max-width: 991px) {
   #map{
     height: 300px;
