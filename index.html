@@ -103,7 +103,7 @@
         <div class="panel panel-default">
           <div class="panel-body">
             <span style="font-weight: bolder;color: green; font-size:20px;"><em>{{ .Rating }}</em></span> 
-            <a href="#">{{ .Name }}</a>
+            <a class="loclink" href="#" dataloc="{{- .Location -}}">{{ .Name }}</a>
             <span style="font-size:20px;float:right;"><span style="color:red; font-weight: bolder">{{ .Number_of_Ratings }}</span> Ratings</span>
           </div>
         </div>
@@ -113,10 +113,6 @@
       <!-- End item -->
       <p>
         <a href="http://github.com/octohedron/touristgopher">Source Code</a>
-      </p>
-      <hr> 
-      <p>
-        <a href="#" target="_ext" class="center-block btn btn-primary">Load more results</a>
       </p>
       <hr>      
     </div>
@@ -132,13 +128,23 @@
 <!-- end template -->
 <script type="text/javascript">
 
-
 $(document).ready(function() {
-var map, infoWindow;
+
+document.querySelector('body').addEventListener('click', function(event) {
+  if (event.target.attributes.dataloc) {
+    event.preventDefault();
+    let lat = event.target.attributes.dataloc.value.split(",")[0];
+    let long = event.target.attributes.dataloc.value.split(",")[1];
+    moveToLocation(lat, long);
+  }
+});
+
+
 /* google maps -----------------------------------------------------*/
 google.maps.event.addDomListener(window, 'load', initialize);
-
+var map, infoWindow;
 function initialize() {
+  
 
   /* position Amsterdam */
   var latlng = new google.maps.LatLng(48.857031, 2.341719);
@@ -180,16 +186,17 @@ function initialize() {
     // using global variable:
     map.panTo(center);
   }
+
 /* end google maps -----------------------------------------------------*/
 // Review template
 const Item = ({
-  Rating, Name, Number_of_Ratings
+  Rating, Location, Name, Number_of_Ratings
 }) => `
   <div class="col-md-6 col-xs-12">
     <div class="panel panel-default">
       <div class="panel-body">
         <span style="font-weight: bolder;color: green; font-size:20px;"><em>${Rating}</em></span> 
-        <a href="#">${Name}</a>
+        <a class="loclink" href="#" dataloc="${Location}">${Name}</a>
         <span style="font-size:20px;float:right;"><span style="color:red; font-weight: bolder">${Number_of_Ratings}</span> Ratings</span>
       </div>
     </div>
@@ -198,6 +205,7 @@ const Item = ({
 var revs = document.getElementById("revs-container");
 // search
 $('#searchform').submit((e) => {
+    e.preventDefault();
     let needle = $('#searchInput').val();
     if (needle.length < 3) {
       alert("Please enter at least 3 characters")
@@ -247,7 +255,6 @@ $('#searchform').submit((e) => {
         });
       });
     }
-    console.log('a');
   });
 });
 

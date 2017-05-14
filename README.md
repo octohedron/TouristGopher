@@ -1,6 +1,6 @@
 # TouristGopher
 
-### Fast Reviews Golang server with Redis 🛩
+### This gopher knows
 
 ## Try it out
 + Install redis
@@ -18,6 +18,6 @@ $ export GMAPS_KEY=YOUR_GMAPS_KEY
 $ go build && nohup ./TouristGopher & 
 ```
 
-Check the other repo, [TouristFriend](http://github.com/octohedron/TouristFriend) that gets the list of results from Google, Yelp and Foursquare, with Bayesian rankings
+Check the other repo, [TouristFriend](http://github.com/octohedron/TouristFriend) that gets the list of results from Google, Yelp and Foursquare, with combined Bayesian rankings
 
 LICENSE: MIT
