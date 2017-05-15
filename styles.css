@@ -114,6 +114,9 @@ body {
 .loclink {
     font-size: 20px;
     display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 @media (min-width: 991px) {
