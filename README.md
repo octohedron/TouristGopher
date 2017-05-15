@@ -25,4 +25,5 @@ $ go build && nohup ./TouristGopher &
 Check the other repo, [TouristFriend](http://github.com/octohedron/TouristFriend)
 
 CONTRIBUTING: YES
+
 LICENSE: MIT
