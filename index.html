@@ -90,7 +90,7 @@
   <div class="row">
     <div class="col-md-8 col-xs-12" id="left">
     
-      <h2>TouristGopher</h2>
+      <h1><em>This Gopher knows</em></h1>
       <p id="pqueryContainer">Search results for <em>restaurants</em> in<em id="resultQueryNotifier"> Paris </em></p>
       <img src="/images/loading.gif" id="loading-indicator" style="display:none" />
       <!-- item list -->
@@ -223,7 +223,7 @@ $('#searchform').submit((e) => {
             if (json["results"] && json["results"].length > 0) {
               var lat = json["results"][0]["geometry"]["location"]["lat"];
               var long = json["results"][0]["geometry"]["location"]["lng"];
-              let apiURL = 'http://touristfriend.club/api/4000/' + lat + ',' + long + '/' + $('#nichepicker').val();
+              let apiURL = 'http://touristgopher.com/api/4000/' + lat + ',' + long + '/' + $('#nichepicker').val();
               fetch(apiURL, {
                 method: 'get'
               }).then(function(response) {

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/sha1"
 	"encoding/json"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 	"html/template"
@@ -149,33 +151,6 @@ func css(w http.ResponseWriter, r *http.Request) {
 	}
 	t.Execute(w, r)
 }
-func main() {
-	// get home data and store it in redis
-	go getHomeData()
-	//for keeping track of users in memory
-	users = make(map[string]User)
-	r := mux.NewRouter()
-	r.HandleFunc("/", index)
-	r.HandleFunc("/styles.css", css)
-	r.PathPrefix("/js/").Handler(http.StripPrefix("/js/",
-		http.FileServer(http.Dir(PROJ_ROOT+"/js/"))))
-	r.PathPrefix("/fonts/").Handler(http.StripPrefix("/fonts/",
-		http.FileServer(http.Dir(PROJ_ROOT+"/fonts/"))))
-	r.PathPrefix("/css/").Handler(http.StripPrefix("/css/",
-		http.FileServer(http.Dir(PROJ_ROOT+"/css/"))))
-	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/",
-		http.FileServer(http.Dir(PROJ_ROOT+"/images/"))))
-	srv := &http.Server{
-		Handler:      r,
-		Addr:         ":" + GPORT,
-		WriteTimeout: 5 * time.Second,
-		ReadTimeout:  5 * time.Second,
-	}
-	err := srv.ListenAndServe()
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
-}
 
 func (slice Reviews) Len() int {
 	return len(slice)
@@ -196,6 +171,7 @@ func (slice Reviews) Less(i, j int) bool {
 func (slice Reviews) Swap(i, j int) {
 	slice[i], slice[j] = slice[j], slice[i]
 }
+
 func getRandomString(n int) string {
 	b := make([]byte, n)
 	src := rand.NewSource(time.Now().UnixNano())
@@ -213,4 +189,70 @@ func getRandomString(n int) string {
 	}
 
 	return string(b)
+}
+func api(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", 405)
+		return
+	}
+	vars := mux.Vars(r)
+	full_query := fmt.Sprintf("%s%s%s", vars["radius"], vars["coords"], vars["needle"])
+	hashed := fmt.Sprintf("%x", sha1.Sum([]byte(full_query)))
+	conn := POOL.Get()
+	defer conn.Close()
+	places_json, err := redis.Bytes(conn.Do("HGET", string(hashed), "json"))
+	if err != nil {
+		log.Println(err)
+	}
+	if places_json != nil {
+		w.Write(places_json)
+	} else {
+		// call
+		client := &http.Client{}
+		req, err := http.NewRequest("GET",
+			fmt.Sprintf("http://touristfriend.club/api/%s/%s/%s",
+				vars["radius"], vars["coords"], vars["needle"]), nil)
+		if err != nil {
+			log.Println(err)
+		}
+		res, err := client.Do(req)
+		if err != nil {
+			log.Println(err)
+		}
+		body, err := ioutil.ReadAll(res.Body)
+		result, err := conn.Do("HSET", string(hashed), "json", body)
+		if err != nil {
+			log.Println(err)
+		}
+		log.Println(result)
+		w.Write(body)
+	}
+}
+func main() {
+	// get home data and store it in redis
+	go getHomeData()
+	//for keeping track of users in memory
+	users = make(map[string]User)
+	r := mux.NewRouter()
+	r.HandleFunc("/", index)
+	r.HandleFunc("/api/{radius}/{coords}/{needle}", api)
+	r.HandleFunc("/styles.css", css)
+	r.PathPrefix("/js/").Handler(http.StripPrefix("/js/",
+		http.FileServer(http.Dir(PROJ_ROOT+"/js/"))))
+	r.PathPrefix("/fonts/").Handler(http.StripPrefix("/fonts/",
+		http.FileServer(http.Dir(PROJ_ROOT+"/fonts/"))))
+	r.PathPrefix("/css/").Handler(http.StripPrefix("/css/",
+		http.FileServer(http.Dir(PROJ_ROOT+"/css/"))))
+	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/",
+		http.FileServer(http.Dir(PROJ_ROOT+"/images/"))))
+	srv := &http.Server{
+		Handler:      r,
+		Addr:         ":" + GPORT,
+		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  5 * time.Second,
+	}
+	err := srv.ListenAndServe()
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
