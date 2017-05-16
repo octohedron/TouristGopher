@@ -75,7 +75,7 @@
           <ul class="dropdown-menu">
             <li><a href="#">Email</a></li>
             <li role="separator" class="divider"></li>
-            <li><a href="https://twitter.com/gustav__rod">Twitter</a></li>
+            <li><a href="https://twitter.com/touristgopher">Twitter</a></li>
           </ul>
         </li>
       </ul>
@@ -91,7 +91,7 @@
     <div class="col-md-8 col-xs-12" id="left">
     
       <h1><em>This Gopher knows</em></h1>
-      <p id="pqueryContainer">Search results for <em>restaurants</em> in<em id="resultQueryNotifier"> Paris </em></p>
+      <p id="pqueryContainer">Search results for <em id="nicheNotifier">restaurants</em> in<em id="resultQueryNotifier"> Paris </em></p>
       <img src="/images/loading.gif" id="loading-indicator" style="display:none" />
       <!-- item list -->
       <div id="revs-container">
@@ -237,6 +237,7 @@ $('#searchform').submit((e) => {
                     $(item).html([i].map(Item).join(''));
                     revs.appendChild(item);
                     $('#pqueryContainer').show();
+                    $("#nicheNotifier").html($('#nichepicker').val());
                     $("#resultQueryNotifier").html(" " + needle.split('+').join(' '));
                     // set new markers
                     let coords = {lat: parseFloat(i["Location"].split(",")[0]), lng: parseFloat(i["Location"].split(",")[1])};
