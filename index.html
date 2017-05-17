@@ -38,10 +38,10 @@
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
-    <a class="navbar-brand" href="#">
-      <img style="height: 26px; width:26px;" src="/images/gopher.png">
-    </a>
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+      <a class="navbar-brand" href="#">
+        <img style="height: 26px; width:26px;" src="/images/gopher.png">
+      </a>
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navMain" aria-expanded="false">
         <span class="sr-only">Toggle navigation</span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -51,7 +51,7 @@
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+    <div class="collapse navbar-collapse" id="navMain">
       <ul class="nav navbar-nav">
         <li class="active"><a href="#">Home <span class="sr-only">(current)</span></a></li>
           <li>
@@ -63,21 +63,20 @@
             </select>
           </li>
       </ul>
-      <form class="navbar-form navbar-left" id="searchform">
-        <div class="form-group">
-          <input type="text" class="form-control" placeholder="Paris, New York, London..." id="searchInput">
+
+
+      <form class="navbar-form">
+        <div class="form-group search-container">
+          <div class="input-group"  id="bootstrapSearchContainer">
+            <input type="text" class="form-control" placeholder="Paris, New York, London..." id="searchInput">
+            <span class="input-group-addon" id="submit"><span class="glyphicon glyphicon-search"></span> </span>
+          </div>
         </div>
-        <button type="submit" class="btn btn-default">Submit</button>
       </form>
+
+
       <ul class="nav navbar-nav navbar-right">
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Contact <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">Email</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="https://twitter.com/touristgopher">Twitter</a></li>
-          </ul>
-        </li>
+        <li><a href="https://twitter.com/touristgopher">TouristGopher's Twitter</a></li>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
@@ -118,6 +117,7 @@
       </div>
     </div>
   </div>
+  <div class='notification' style='display:none'>Map updated</div>
   <p>
       <a href="http://github.com/octohedron/touristgopher">Source Code</a>
     </p>
@@ -127,138 +127,140 @@
 
 $(document).ready(function() {
 
-document.querySelector('body').addEventListener('click', function(event) {
-  if (event.target.attributes.dataloc) {
-    event.preventDefault();
-    let lat = event.target.attributes.dataloc.value.split(",")[0];
-    let long = event.target.attributes.dataloc.value.split(",")[1];
-    moveToLocation(lat, long);
-  }
-});
-
-
-/* google maps -----------------------------------------------------*/
-google.maps.event.addDomListener(window, 'load', initialize);
-var map, infoWindow;
-function initialize() {
-  
-
-  /* position Amsterdam */
-  var latlng = new google.maps.LatLng(48.857031, 2.341719);
-
-  var mapOptions = {
-    center: latlng,
-    zoom: 15
-  };
-  
-  // Initialize map
-  map = new google.maps.Map(document.getElementById("map"), mapOptions);
-
-  // Print places
-  {{range $i, $a := .Places}}
-    let {{ toJS .Identifier }} = {lat: parseFloat('{{ .Location }}'.split(",")[0]), lng: parseFloat('{{ .Location }}'.split(",")[1])};
-    var {{toJS  .MarkerVar -}} = new google.maps.Marker({
-      position: {{ toJS  .Identifier }},
-      map: map,
-      label: '{{ .Name }}',
-      animation: google.maps.Animation.DROP
-    });
-    {{ toJS .MarkerVar -}}.setMap(map);
-  {{end}}
-
-  }; // end initialize
-
-  google.maps.event.addDomListener(window, "resize", function() {
-    var center = map.getCenter();
-    google.maps.event.trigger(map, "resize");
-    map.setCenter(center);
-  });
-  /**
-   * For panning the map
-   * @param  {float} lat The latitude to pan to
-   * @param  {float} lng the longitude to pan to
-   */
-  function moveToLocation(lat, lng){
-    var center = new google.maps.LatLng(lat, lng);
-    // using global variable:
-    map.panTo(center);
-  }
-
-/* end google maps -----------------------------------------------------*/
-// Review template
-const Item = ({
-  Rating, Location, Name, Number_of_Ratings
-}) => `
-  <div class="col-md-6 col-xs-12">
-    <div class="panel panel-default">
-      <div class="panel-body">
-        <span class="ratingScore"><em>${Rating}</em></span> 
-        <span class="ratingsSpan"><span class="numRatings">${Number_of_Ratings}</span> Ratings</span>
-        <a class="loclink" href="#" dataloc="${Location}">${Name}</a>
-      </div>
-    </div>
-  </div> `;
-// reference to the reviews log
-var revs = document.getElementById("revs-container");
-// search
-$('#searchform').submit((e) => {
-    e.preventDefault();
-    let needle = encodeURIComponent($('#searchInput').val().trim()).split('%20').join('+');
-    if (needle.length < 3) {
-      alert("Please enter at least 3 characters")
-    } else if (needle.length > 50) {
-      alert("Search query too long")
-    } else {
-      let geoURL = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + needle + "&key={{- toJS .GMAPS_KEY -}}";
-      // clear items first
-      while (revs.hasChildNodes()) {
-        revs.removeChild(revs.lastChild);
-      }
-      $('#loading-indicator').show();
-      $('#pqueryContainer').hide();
-      fetch(geoURL, {
-          method: 'get'
-        }).then(function(response) {
-          response.json().then(function(json) {
-            if (json["results"] && json["results"].length > 0) {
-              var lat = json["results"][0]["geometry"]["location"]["lat"];
-              var long = json["results"][0]["geometry"]["location"]["lng"];
-              let apiURL = 'http://touristgopher.com/api/4000/' + lat + ',' + long + '/' + $('#nichepicker').val();
-              fetch(apiURL, {
-                method: 'get'
-              }).then(function(response) {
-                response.json().then(function(json) {
-                  // hide loading indicator
-                  $('#loading-indicator').hide();
-                  moveToLocation(lat, long);
-                  // append new items
-                  json.forEach((i) => {
-                    var item = document.createElement("div");
-                    $(item).html([i].map(Item).join(''));
-                    revs.appendChild(item);
-                    $('#pqueryContainer').show();
-                    $("#nicheNotifier").html($('#nichepicker').val());
-                    $("#resultQueryNotifier").html(" " + needle.split('+').join(' '));
-                    // set new markers
-                    let coords = {lat: parseFloat(i["Location"].split(",")[0]), lng: parseFloat(i["Location"].split(",")[1])};
-                    var marker = new google.maps.Marker({
-                      position: coords,
-                      map: map,
-                      label: i["Name"],
-                      animation: google.maps.Animation.DROP
-                    });
-                   marker.setMap(map);
-                  })
-                }).catch((e) => console.log(e));
-              })
-            } else {
-              $('#loading-indicator').hide();
-              $("#resultQueryNotifier").html(needle + " are none");
-            }
-        });
-      }).catch((e) => console.log(e));
+  document.querySelector('body').addEventListener('click', function(event) {
+    if (event.target.attributes.dataloc) {
+      event.preventDefault();
+      let lat = event.target.attributes.dataloc.value.split(",")[0];
+      let long = event.target.attributes.dataloc.value.split(",")[1];
+      $('.notification').text($(this).data('text')).fadeIn(400).delay(2000).fadeOut(400);
+      moveToLocation(lat, long);
     }
   });
+
+
+  /* google maps -----------------------------------------------------*/
+  google.maps.event.addDomListener(window, 'load', initialize);
+  var map, infoWindow;
+  function initialize() {
+    
+
+    /* position Amsterdam */
+    var latlng = new google.maps.LatLng(48.857031, 2.341719);
+
+    var mapOptions = {
+      center: latlng,
+      zoom: 15
+    };
+    
+    // Initialize map
+    map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+    // Print places
+    {{range $i, $a := .Places}}
+      let {{ toJS .Identifier }} = {lat: parseFloat('{{ .Location }}'.split(",")[0]), lng: parseFloat('{{ .Location }}'.split(",")[1])};
+      var {{toJS  .MarkerVar -}} = new google.maps.Marker({
+        position: {{ toJS  .Identifier }},
+        map: map,
+        label: '{{ .Name }}',
+        animation: google.maps.Animation.DROP
+      });
+      {{ toJS .MarkerVar -}}.setMap(map);
+    {{end}}
+
+    }; // end initialize
+
+    google.maps.event.addDomListener(window, "resize", function() {
+      var center = map.getCenter();
+      google.maps.event.trigger(map, "resize");
+      map.setCenter(center);
+    });
+    /**
+     * For panning the map
+     * @param  {float} lat The latitude to pan to
+     * @param  {float} lng the longitude to pan to
+     */
+    function moveToLocation(lat, lng){
+      var center = new google.maps.LatLng(lat, lng);
+      // using global variable:
+      map.panTo(center);
+    }
+
+  /* end google maps -----------------------------------------------------*/
+  // Review template
+  const Item = ({
+    Rating, Location, Name, Number_of_Ratings
+  }) => `
+    <div class="col-md-6 col-xs-12">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <span class="ratingScore"><em>${Rating}</em></span> 
+          <span class="ratingsSpan"><span class="numRatings">${Number_of_Ratings}</span> Ratings</span>
+          <a class="loclink" href="#" dataloc="${Location}">${Name}</a>
+        </div>
+      </div>
+    </div> `;
+  // reference to the reviews log
+  var revs = document.getElementById("revs-container");
+  // search
+  $('#submit').click((e) => {
+      e.preventDefault();
+      $("#navMain").collapse('hide');
+      let needle = encodeURIComponent($('#searchInput').val().trim()).split('%20').join('+');
+      if (needle.length < 3) {
+        alert("Please enter at least 3 characters")
+      } else if (needle.length > 50) {
+        alert("Search query too long")
+      } else {
+        let geoURL = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + needle + "&key={{- toJS .GMAPS_KEY -}}";
+        // clear items first
+        while (revs.hasChildNodes()) {
+          revs.removeChild(revs.lastChild);
+        }
+        $('#loading-indicator').show();
+        $('#pqueryContainer').hide();
+        fetch(geoURL, {
+            method: 'get'
+          }).then(function(response) {
+            response.json().then(function(json) {
+              if (json["results"] && json["results"].length > 0) {
+                var lat = json["results"][0]["geometry"]["location"]["lat"];
+                var long = json["results"][0]["geometry"]["location"]["lng"];
+                let apiURL = 'http://touristgopher.com/api/4000/' + lat + ',' + long + '/' + $('#nichepicker').val();
+                fetch(apiURL, {
+                  method: 'get'
+                }).then(function(response) {
+                  response.json().then(function(json) {
+                    // hide loading indicator
+                    $('#loading-indicator').hide();
+                    moveToLocation(lat, long);
+                    // append new items
+                    json.forEach((i) => {
+                      var item = document.createElement("div");
+                      $(item).html([i].map(Item).join(''));
+                      revs.appendChild(item);
+                      $('#pqueryContainer').show();
+                      $("#nicheNotifier").html($('#nichepicker').val());
+                      $("#resultQueryNotifier").html(" " + needle.split('+').join(' '));
+                      // set new markers
+                      let coords = {lat: parseFloat(i["Location"].split(",")[0]), lng: parseFloat(i["Location"].split(",")[1])};
+                      var marker = new google.maps.Marker({
+                        position: coords,
+                        map: map,
+                        label: i["Name"],
+                        animation: google.maps.Animation.DROP
+                      });
+                     marker.setMap(map);
+                    })
+                  }).catch((e) => console.log(e));
+                })
+              } else {
+                $('#loading-indicator').hide();
+                $("#resultQueryNotifier").html(needle + " are none");
+              }
+          });
+        }).catch((e) => console.log(e));
+      }
+    });
 });
 
 </script>
