@@ -80,12 +80,16 @@ body {
     overflow: hidden;
     position: relative;
   }
+  .navbar-form{
+    width: 100%;
+  }
   #left{
     height: auto;
   }
   #nichepicker {
         margin-top: 5px !important;
-        width: 60%;
+        width: 100% !important;
+        display: block !important;
         margin-left: auto !important;
         margin-right: auto !important;
     }
@@ -189,6 +193,12 @@ body {
     display: inline-block;
   }
 
+#nichepicker {
+    min-width: 125px;
+    margin-left: 7px;
+    display: inline-block;
+    width: 200px;
+}
 .notification {
     width:200px;
     height:20px;
