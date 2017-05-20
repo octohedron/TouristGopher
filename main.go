@@ -111,7 +111,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 func getHomeData() {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET",
-		"http://touristfriend.club/api/2000/48.857031,2.341719/restaurants", nil)
+		"http://touristfriend.club/api/2000/48.8589507,2.2775172/restaurants", nil)
 	if err != nil {
 		log.Println(err)
 	}
