@@ -55,7 +55,7 @@
       
 
 
-      <form class="navbar-form">
+      <form class="navbar-form" id="serachForm">
 
       
       <select class="form-control" id="nichepicker">
@@ -201,10 +201,17 @@ $(document).ready(function() {
     </div> `;
   // reference to the reviews log
   var revs = document.getElementById("revs-container");
+  $('#serachForm').submit((e) => {
+    e.preventDefault();
+    search();
+  })
   // search
   $('#submit').click((e) => {
       e.preventDefault();
-      $("#navMain").collapse('hide');
+      search();    
+  });
+  function search() {
+    $("#navMain").collapse('hide');
       let needle = encodeURIComponent($('#searchInput').val().trim()).split('%20').join('+');
       if (needle.length < 3) {
         alert("Please enter at least 3 characters")
@@ -260,7 +267,7 @@ $(document).ready(function() {
           });
         }).catch((e) => console.log(e));
       }
-    });
+  }
 });
 
 </script>
