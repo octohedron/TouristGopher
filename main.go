@@ -4,8 +4,6 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"github.com/garyburd/redigo/redis"
-	"github.com/gorilla/mux"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -15,6 +13,9 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/garyburd/redigo/redis"
+	"github.com/gorilla/mux"
 )
 
 // generate random ids
@@ -111,7 +112,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 func getHomeData() {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET",
-		"http://touristfriend.club/api/2000/48.8589507,2.2775172/restaurants", nil)
+		"http://localhost:5000/api/2000/48.8589507,2.2775172/restaurants", nil)
 	if err != nil {
 		log.Println(err)
 	}
@@ -190,6 +191,7 @@ func getRandomString(n int) string {
 
 	return string(b)
 }
+
 func api(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", 405)
@@ -228,6 +230,7 @@ func api(w http.ResponseWriter, r *http.Request) {
 		w.Write(body)
 	}
 }
+
 func main() {
 	// get home data and store it in redis
 	go getHomeData()
