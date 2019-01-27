@@ -58,12 +58,16 @@ var GMAPS_KEY = ""
 // Declare a global variable to store the Redis connection pool.
 var POOL *redis.Pool
 
-func init() {
-	// set root directory
-	ROOT, err := os.Getwd()
+func logErr(err error) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func init() {
+	// set root directory
+	ROOT, err := os.Getwd()
+	logErr(err)
 	GMAPS_KEY = os.Getenv("GMAPS_KEY")
 	PROJ_ROOT = ROOT
 	// Establish a pool of 5 Redis connections to the Redis server
@@ -86,9 +90,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	conn := POOL.Get()
 	defer conn.Close()
 	places_json, err := redis.Strings(conn.Do("SMEMBERS", "places"))
-	if err != nil {
-		log.Println(err)
-	}
+	logErr(err)
 	places := Reviews{}
 	for _, place := range places_json {
 		p := Review{}
@@ -113,13 +115,9 @@ func getHomeData() {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET",
 		"http://localhost:5000/api/2000/48.8589507,2.2775172/restaurants", nil)
-	if err != nil {
-		log.Println(err)
-	}
+	logErr(err)
 	res, err := client.Do(req)
-	if err != nil {
-		log.Println(err)
-	}
+	logErr(err)
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Println(err)
@@ -132,13 +130,9 @@ func getHomeData() {
 	for _, place := range places {
 		json, err := json.Marshal(place)
 		_, err = conn.Do("SADD", "places", json)
-		if err != nil {
-			log.Println(err)
-		}
+		logErr(err)
 	}
-	if err != nil {
-		log.Println(err)
-	}
+	logErr(err)
 }
 func css(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
@@ -147,9 +141,7 @@ func css(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/css")
 	t, err := template.New("styles.css").ParseFiles(PROJ_ROOT + "/styles.css")
-	if err != nil {
-		log.Println(err)
-	}
+	logErr(err)
 	t.Execute(w, r)
 }
 
@@ -159,13 +151,9 @@ func (slice Reviews) Len() int {
 
 func (slice Reviews) Less(i, j int) bool {
 	a, err := strconv.ParseFloat(slice[i].Rating, 32)
-	if err != nil {
-		log.Println(err)
-	}
+	logErr(err)
 	b, err := strconv.ParseFloat(slice[j].Rating, 32)
-	if err != nil {
-		log.Println(err)
-	}
+	logErr(err)
 	return a > b
 }
 
@@ -203,9 +191,7 @@ func api(w http.ResponseWriter, r *http.Request) {
 	conn := POOL.Get()
 	defer conn.Close()
 	places_json, err := redis.Bytes(conn.Do("HGET", string(hashed), "json"))
-	if err != nil {
-		log.Println(err)
-	}
+	logErr(err)
 	if places_json != nil {
 		w.Write(places_json)
 	} else {
@@ -214,18 +200,12 @@ func api(w http.ResponseWriter, r *http.Request) {
 		req, err := http.NewRequest("GET",
 			fmt.Sprintf("http://localhost:5000/api/%s/%s/%s",
 				vars["radius"], vars["coords"], vars["needle"]), nil)
-		if err != nil {
-			log.Println(err)
-		}
+		logErr(err)
 		res, err := client.Do(req)
-		if err != nil {
-			log.Println(err)
-		}
+		logErr(err)
 		body, err := ioutil.ReadAll(res.Body)
 		result, err := conn.Do("HSET", string(hashed), "json", body)
-		if err != nil {
-			log.Println(err)
-		}
+		logErr(err)
 		log.Println(result)
 		w.Write(body)
 	}
