@@ -89,10 +89,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 	conn := POOL.Get()
 	defer conn.Close()
-	places_json, err := redis.Strings(conn.Do("SMEMBERS", "places"))
+	placesJSON, err := redis.Strings(conn.Do("SMEMBERS", "places"))
 	logErr(err)
 	places := Reviews{}
-	for _, place := range places_json {
+	for _, place := range placesJSON {
 		p := Review{}
 		json.Unmarshal([]byte(place), &p)
 		p.Identifier = getRandomString(8)
@@ -186,14 +186,14 @@ func api(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	vars := mux.Vars(r)
-	full_query := fmt.Sprintf("%s%s%s", vars["radius"], vars["coords"], vars["needle"])
-	hashed := fmt.Sprintf("%x", sha1.Sum([]byte(full_query)))
+	fullQ := fmt.Sprintf("%s%s%s", vars["radius"], vars["coords"], vars["needle"])
+	hashed := fmt.Sprintf("%x", sha1.Sum([]byte(fullQ)))
 	conn := POOL.Get()
 	defer conn.Close()
-	places_json, err := redis.Bytes(conn.Do("HGET", string(hashed), "json"))
+	placesJSON, err := redis.Bytes(conn.Do("HGET", string(hashed), "json"))
 	logErr(err)
-	if places_json != nil {
-		w.Write(places_json)
+	if placesJSON != nil {
+		w.Write(placesJSON)
 	} else {
 		// call
 		client := &http.Client{}
@@ -204,9 +204,12 @@ func api(w http.ResponseWriter, r *http.Request) {
 		res, err := client.Do(req)
 		logErr(err)
 		body, err := ioutil.ReadAll(res.Body)
-		result, err := conn.Do("HSET", string(hashed), "json", body)
 		logErr(err)
-		log.Println(result)
+		_, err = conn.Do("HSET", string(hashed), "json", body)
+		logErr(err)
+		// expire in 10 days
+		_, err = conn.Do("EXPIRE", string(hashed), 3600*240)
+		logErr(err)
 		w.Write(body)
 	}
 }
