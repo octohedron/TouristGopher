@@ -212,7 +212,7 @@ func api(w http.ResponseWriter, r *http.Request) {
 		// call
 		client := &http.Client{}
 		req, err := http.NewRequest("GET",
-			fmt.Sprintf("http://touristfriend.club/api/%s/%s/%s",
+			fmt.Sprintf("http://localhost:5000/api/%s/%s/%s",
 				vars["radius"], vars["coords"], vars["needle"]), nil)
 		if err != nil {
 			log.Println(err)
