@@ -48,7 +48,7 @@ type DBReview struct {
 	Json     []byte
 }
 
-var PROJ_ROOT = ""
+var pRoot = ""
 var users map[string]User
 var AuthorizedIps []string
 var ReviewChannel chan DBReview
@@ -69,7 +69,7 @@ func init() {
 	ROOT, err := os.Getwd()
 	logErr(err)
 	GMAPS_KEY = os.Getenv("GMAPS_KEY")
-	PROJ_ROOT = ROOT
+	pRoot = ROOT
 	// Establish a pool of 5 Redis connections to the Redis server
 	POOL = newPool("localhost:6379")
 }
@@ -105,7 +105,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 			return template.JS(v)
 		},
 	}).ParseFiles(
-		PROJ_ROOT+"/index.html")).Execute(w, struct {
+		pRoot+"/index.html")).Execute(w, struct {
 		Places    []Review
 		GMAPS_KEY string
 	}{places, GMAPS_KEY})
@@ -134,13 +134,14 @@ func getHomeData() {
 	}
 	logErr(err)
 }
+
 func css(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", 405)
 		return
 	}
 	w.Header().Set("Content-Type", "text/css")
-	t, err := template.New("styles.css").ParseFiles(PROJ_ROOT + "/styles.css")
+	t, err := template.New("styles.css").ParseFiles(pRoot + "/styles.css")
 	logErr(err)
 	t.Execute(w, r)
 }
@@ -224,13 +225,13 @@ func main() {
 	r.HandleFunc("/api/{radius}/{coords}/{needle}", api)
 	r.HandleFunc("/styles.css", css)
 	r.PathPrefix("/js/").Handler(http.StripPrefix("/js/",
-		http.FileServer(http.Dir(PROJ_ROOT+"/js/"))))
+		http.FileServer(http.Dir(pRoot+"/js/"))))
 	r.PathPrefix("/fonts/").Handler(http.StripPrefix("/fonts/",
-		http.FileServer(http.Dir(PROJ_ROOT+"/fonts/"))))
+		http.FileServer(http.Dir(pRoot+"/fonts/"))))
 	r.PathPrefix("/css/").Handler(http.StripPrefix("/css/",
-		http.FileServer(http.Dir(PROJ_ROOT+"/css/"))))
+		http.FileServer(http.Dir(pRoot+"/css/"))))
 	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/",
-		http.FileServer(http.Dir(PROJ_ROOT+"/images/"))))
+		http.FileServer(http.Dir(pRoot+"/images/"))))
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         ":" + GPORT,
