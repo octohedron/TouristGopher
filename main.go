@@ -125,7 +125,8 @@ func api(w http.ResponseWriter, r *http.Request) {
 		// expire in 10 days
 		_, err = conn.Do("EXPIRE", string(hashed), 3600*240)
 		logErr(err)
-		w.Write(body)
+		_, err = w.Write(body)
+		logErr(err)
 	}
 }
 
