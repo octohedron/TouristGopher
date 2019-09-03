@@ -108,7 +108,8 @@ func api(w http.ResponseWriter, r *http.Request) {
 	placesJSON, err := redis.Bytes(conn.Do("HGET", string(hashed), "json"))
 	logErr(err)
 	if placesJSON != nil {
-		w.Write(placesJSON)
+		_, err = w.Write(placesJSON)
+		logErr(err)
 	} else {
 		// call
 		client := &http.Client{}
