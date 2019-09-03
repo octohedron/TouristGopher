@@ -26,13 +26,6 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
-type User struct {
-	Id         string `json:"id"`
-	Name       string `json:"name"`
-	Created_at string `json:"created_at"`
-	IP         string
-}
-
 type Review struct {
 	Rating            string `json:"Rating"`
 	Sources           int    `json:"Sources"`
@@ -42,14 +35,15 @@ type Review struct {
 	Identifier        string
 	MarkerVar         string
 }
+
 type Reviews []Review
+
 type DBReview struct {
 	Location string
 	Json     []byte
 }
 
 var pRoot = ""
-var users map[string]User
 var gPORT = "8000"
 var gMapsKey = ""
 
@@ -216,8 +210,6 @@ func api(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// get home data and store it in redis
 	go getHomeData()
-	//for keeping track of users in memory
-	users = make(map[string]User)
 	r := mux.NewRouter()
 	r.HandleFunc("/", index)
 	r.HandleFunc("/api/{radius}/{coords}/{needle}", api)
