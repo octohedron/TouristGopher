@@ -45,7 +45,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		places = append(places, p)
 	}
 	sort.Sort(places)
-	template.Must(template.New("index.html").Funcs(template.FuncMap{
+	err = template.Must(template.New("index.html").Funcs(template.FuncMap{
 		"toJS": func(v string) template.JS {
 			return template.JS(v)
 		},
@@ -54,6 +54,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		Places   []review
 		gMapsKey string
 	}{places, gMapsKey})
+	logErr(err)
 }
 
 func getHomeData() {
