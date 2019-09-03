@@ -18,13 +18,12 @@ const (
 )
 
 type review struct {
-	Rating            string `json:"Rating"`
-	Sources           int    `json:"Sources"`
-	Number_of_Ratings int    `json:"Number_of_Ratings"`
-	Location          string `json:"Location"`
-	Name              string `json:"Name"`
-	Identifier        string
-	MarkerVar         string
+	Rating     string `json:"Rating"`
+	Sources    int    `json:"Sources"`
+	Location   string `json:"Location"`
+	Name       string `json:"Name"`
+	Identifier string
+	MarkerVar  string
 }
 
 type reviews []review
