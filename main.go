@@ -220,8 +220,8 @@ func main() {
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         ":" + gPORT,
-		WriteTimeout: 5 * time.Second,
-		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 20 * time.Second,
+		ReadTimeout:  20 * time.Second,
 	}
 	err := srv.ListenAndServe()
 	if err != nil {
