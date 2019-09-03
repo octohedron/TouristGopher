@@ -73,6 +73,7 @@ func getHomeData() {
 	defer conn.Close()
 	for _, place := range places {
 		json, err := json.Marshal(place)
+		logErr(err)
 		_, err = conn.Do("SADD", "places", json)
 		logErr(err)
 	}
