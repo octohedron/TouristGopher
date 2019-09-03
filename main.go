@@ -70,7 +70,8 @@ func getHomeData() {
 		return
 	}
 	var places []review
-	json.Unmarshal(body, &places)
+	err = json.Unmarshal(body, &places)
+	logErr(err)
 	conn := rPOOL.Get()
 	defer conn.Close()
 	for _, place := range places {
