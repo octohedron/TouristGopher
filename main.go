@@ -38,7 +38,8 @@ func index(w http.ResponseWriter, r *http.Request) {
 	places := reviews{}
 	for _, place := range placesJSON {
 		p := review{}
-		json.Unmarshal([]byte(place), &p)
+		err = json.Unmarshal([]byte(place), &p)
+		logErr(err)
 		p.Identifier = getRandomString(8)
 		p.MarkerVar = getRandomString(8)
 		places = append(places, p)
