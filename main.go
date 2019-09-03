@@ -51,7 +51,7 @@ type DBReview struct {
 var pRoot = ""
 var users map[string]User
 var gPORT = "8000"
-var GMAPS_KEY = ""
+var gMapsKey = ""
 
 // Declare a global variable to store the Redis connection pool.
 var POOL *redis.Pool
@@ -66,7 +66,7 @@ func init() {
 	// set root directory
 	ROOT, err := os.Getwd()
 	logErr(err)
-	GMAPS_KEY = os.Getenv("GMAPS_KEY")
+	gMapsKey = os.Getenv("GMAPS_KEY")
 	pRoot = ROOT
 	// Establish a pool of 5 Redis connections to the Redis server
 	POOL = newPool("localhost:6379")
@@ -104,9 +104,9 @@ func index(w http.ResponseWriter, r *http.Request) {
 		},
 	}).ParseFiles(
 		pRoot+"/index.html")).Execute(w, struct {
-		Places    []Review
-		GMAPS_KEY string
-	}{places, GMAPS_KEY})
+		Places   []Review
+		gMapsKey string
+	}{places, gMapsKey})
 }
 
 func getHomeData() {
