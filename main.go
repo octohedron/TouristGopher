@@ -50,7 +50,7 @@ type DBReview struct {
 
 var pRoot = ""
 var users map[string]User
-var GPORT = "8000"
+var gPORT = "8000"
 var GMAPS_KEY = ""
 
 // Declare a global variable to store the Redis connection pool.
@@ -232,7 +232,7 @@ func main() {
 		http.FileServer(http.Dir(pRoot+"/images/"))))
 	srv := &http.Server{
 		Handler:      r,
-		Addr:         ":" + GPORT,
+		Addr:         ":" + gPORT,
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}
