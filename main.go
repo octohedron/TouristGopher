@@ -91,7 +91,8 @@ func css(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/css")
 	t, err := template.New("styles.css").ParseFiles(pRoot + "/styles.css")
 	logErr(err)
-	t.Execute(w, r)
+	err = t.Execute(w, r)
+	logErr(err)
 }
 
 func api(w http.ResponseWriter, r *http.Request) {
