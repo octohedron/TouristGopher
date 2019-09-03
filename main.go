@@ -50,7 +50,6 @@ type DBReview struct {
 
 var pRoot = ""
 var users map[string]User
-var AuthorizedIps []string
 var ReviewChannel chan DBReview
 var GPORT = "8000"
 var GMAPS_KEY = ""
