@@ -26,7 +26,7 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
-type Review struct {
+type review struct {
 	Rating            string `json:"Rating"`
 	Sources           int    `json:"Sources"`
 	Number_of_Ratings int    `json:"Number_of_Ratings"`
@@ -36,12 +36,7 @@ type Review struct {
 	MarkerVar         string
 }
 
-type Reviews []Review
-
-type DBReview struct {
-	Location string
-	Json     []byte
-}
+type reviews []review
 
 var pRoot = ""
 var gPORT = "8000"
@@ -83,9 +78,9 @@ func index(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 	placesJSON, err := redis.Strings(conn.Do("SMEMBERS", "places"))
 	logErr(err)
-	places := Reviews{}
+	places := reviews{}
 	for _, place := range placesJSON {
-		p := Review{}
+		p := review{}
 		json.Unmarshal([]byte(place), &p)
 		p.Identifier = getRandomString(8)
 		p.MarkerVar = getRandomString(8)
@@ -98,7 +93,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		},
 	}).ParseFiles(
 		pRoot+"/index.html")).Execute(w, struct {
-		Places   []Review
+		Places   []review
 		gMapsKey string
 	}{places, gMapsKey})
 }
@@ -115,7 +110,7 @@ func getHomeData() {
 		log.Println(err)
 		return
 	}
-	var places []Review
+	var places []review
 	json.Unmarshal(body, &places)
 	conn := rPOOL.Get()
 	defer conn.Close()
@@ -138,11 +133,11 @@ func css(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, r)
 }
 
-func (slice Reviews) Len() int {
+func (slice reviews) Len() int {
 	return len(slice)
 }
 
-func (slice Reviews) Less(i, j int) bool {
+func (slice reviews) Less(i, j int) bool {
 	a, err := strconv.ParseFloat(slice[i].Rating, 32)
 	logErr(err)
 	b, err := strconv.ParseFloat(slice[j].Rating, 32)
@@ -150,7 +145,7 @@ func (slice Reviews) Less(i, j int) bool {
 	return a > b
 }
 
-func (slice Reviews) Swap(i, j int) {
+func (slice reviews) Swap(i, j int) {
 	slice[i], slice[j] = slice[j], slice[i]
 }
 
