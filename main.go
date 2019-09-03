@@ -54,7 +54,7 @@ var gPORT = "8000"
 var gMapsKey = ""
 
 // Declare a global variable to store the Redis connection pool.
-var POOL *redis.Pool
+var rPOOL *redis.Pool
 
 func logErr(err error) {
 	if err != nil {
@@ -69,7 +69,7 @@ func init() {
 	gMapsKey = os.Getenv("GMAPS_KEY")
 	pRoot = ROOT
 	// Establish a pool of 5 Redis connections to the Redis server
-	POOL = newPool("localhost:6379")
+	rPOOL = newPool("localhost:6379")
 }
 
 func newPool(addr string) *redis.Pool {
@@ -85,7 +85,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", 405)
 		return
 	}
-	conn := POOL.Get()
+	conn := rPOOL.Get()
 	defer conn.Close()
 	placesJSON, err := redis.Strings(conn.Do("SMEMBERS", "places"))
 	logErr(err)
@@ -123,7 +123,7 @@ func getHomeData() {
 	}
 	var places []Review
 	json.Unmarshal(body, &places)
-	conn := POOL.Get()
+	conn := rPOOL.Get()
 	defer conn.Close()
 	for _, place := range places {
 		json, err := json.Marshal(place)
@@ -187,7 +187,7 @@ func api(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fullQ := fmt.Sprintf("%s%s%s", vars["radius"], vars["coords"], vars["needle"])
 	hashed := fmt.Sprintf("%x", sha1.Sum([]byte(fullQ)))
-	conn := POOL.Get()
+	conn := rPOOL.Get()
 	defer conn.Close()
 	placesJSON, err := redis.Bytes(conn.Do("HGET", string(hashed), "json"))
 	logErr(err)
